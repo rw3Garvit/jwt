@@ -1,4 +1,4 @@
-const { createToken } = require("../middleware/auth");
+const { createToken, verifyToken } = require("../middleware/auth");
 const { userService } = require("../services");
 
 const registerUser = async (req, res) => {
@@ -21,6 +21,8 @@ const loginUser = async (req, res) => {
 
   const findUser = await userService.findUser(body.username);
 
+  console.log(findUser);
+
   if (!findUser) {
     res.status(500).json({ message: "user not found" });
   } else {
@@ -38,18 +40,20 @@ const loginUser = async (req, res) => {
   }
 };
 
-const getProfile = (req, res) => {
-  const cookie = req.cookies["access-token"];
+const getProfile = async (req, res) => {
+  const token = req.cookies["access-token"];
 
-  console.log(cookie, "asdasdadadasdsa");
-
-  if (!cookie) {
+  if (!token) {
     res.status(500).json({
       mesasge: "you are not login",
     });
   }
 
-  res.status(200).json({ message: "profile get success" });
+  const profile = await verifyToken(token);
+
+  console.log(profile, "profile");
+
+  res.status(200).json({ message: "profile get success", profile });
 };
 
 module.exports = { registerUser, loginUser, getProfile };
